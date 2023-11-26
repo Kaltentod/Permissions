@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34309.116
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Permissions.App", "Permissions\Permissions.App.csproj", "{B5B0F981-C27D-4C0D-93CA-6DA15CDAC87F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Permissions.App", "Permissions.App\Permissions.App.csproj", "{B5B0F981-C27D-4C0D-93CA-6DA15CDAC87F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Permissions.Infrastructure.SQLServer", "Infrastructure.SQLServer\Permissions.Infrastructure.SQLServer.csproj", "{EC3BEC6A-5CFE-4912-863A-D93076F3C926}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Permissions.Domain", "Permissions.Domain\Permissions.Domain.csproj", "{31BC8538-B9BF-45BE-9A6A-3ED47B33590A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{EC3BEC6A-5CFE-4912-863A-D93076F3C926}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC3BEC6A-5CFE-4912-863A-D93076F3C926}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC3BEC6A-5CFE-4912-863A-D93076F3C926}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31BC8538-B9BF-45BE-9A6A-3ED47B33590A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31BC8538-B9BF-45BE-9A6A-3ED47B33590A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31BC8538-B9BF-45BE-9A6A-3ED47B33590A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31BC8538-B9BF-45BE-9A6A-3ED47B33590A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

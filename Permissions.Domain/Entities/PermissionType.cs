@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace Permissions.Infrastructure.SQLServer.Entities
+namespace Permissions.Domain.Entities
 {
-    public class PermissionType
+    public class PermissionType : IEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

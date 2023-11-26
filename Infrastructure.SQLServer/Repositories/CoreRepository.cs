@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Permissions.Infrastructure.SQLServer.Repositories;
+using System.Linq.Expressions;
 
 namespace Permissions.Infrastructure.SQLServer
 {
@@ -12,43 +13,55 @@ namespace Permissions.Infrastructure.SQLServer
         {
             this.context = context;
         }
-        public async Task<TEntity> Add(TEntity entity)
+        public async Task<TEntity> Create(TEntity entity)
         {
-            context.Set<TEntity>().Add(entity);
-            await context.SaveChangesAsync();
+            await context.Set<TEntity>().AddAsync(entity);
             return entity;
         }
 
-        public async Task<TEntity> Delete(int id)
+        public async Task Delete(TEntity entity)
         {
-            var entity = await context.Set<TEntity>().FindAsync(id);
-            if (entity == null)
-            {
-                return entity;
-            }
-
             context.Set<TEntity>().Remove(entity);
-            await context.SaveChangesAsync();
-
-            return entity;
         }
 
         public async Task<TEntity> GetById(int id)
         {
-            return await context.Set<TEntity>().FindAsync(id);
+            //return await context.Set<TEntity>().FindAsync(id);
+            var entityType = context.Model.FindEntityType(typeof(TEntity));
+            var primaryKey = entityType.FindPrimaryKey().Properties.FirstOrDefault();
+            var parameter = Expression.Parameter(typeof(TEntity), "entity");
+            var property = Expression.Property(parameter, primaryKey.Name);
+            var equals = Expression.Equal(property, Expression.Constant(id));
+
+            var lambda = Expression.Lambda<Func<TEntity, bool>>(equals, parameter);
+
+            var query = context.Set<TEntity>().AsQueryable();
+            query = IncludeAllNavigationProperties(query);
+            return await query.FirstOrDefaultAsync(lambda);
         }
 
         public async Task<List<TEntity>> GetAll()
         {
-            return await context.Set<TEntity>().ToListAsync();
+            var query = context.Set<TEntity>().AsQueryable();
+            query = IncludeAllNavigationProperties(query);
+            return await query.ToListAsync();
         }
 
-        public async Task<TEntity> Update(TEntity entity)
+        public Task<TEntity> Update(TEntity entity)
         {
-            context.Entry(entity).State = EntityState.Modified;
-            await context.SaveChangesAsync();
-            return entity;
+             context.Entry(entity).State = EntityState.Modified;
+            return Task.FromResult(entity);
         }
 
+        private IQueryable<TEntity> IncludeAllNavigationProperties(IQueryable<TEntity> query)
+        {
+            var entityType = context.Model.FindEntityType(typeof(TEntity));
+            foreach (var navigation in entityType.GetNavigations())
+            {
+                query = query.Include(navigation.Name);
+            }
+
+            return query;
+        }
     }
 }

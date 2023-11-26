@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace Permissions.Infrastructure.SQLServer.Entities
+namespace Permissions.Domain.Entities
 {
-    public class Permission
+    public class Permission : IEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -24,6 +24,6 @@ namespace Permissions.Infrastructure.SQLServer.Entities
         public DateTime PermissionDate { get; set; }
 
         [ForeignKey("PermissionType")]
-        public virtual PermissionType Type { get; set; }
+        public virtual PermissionType PermissionTypeRel { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Permissions.Domain.Entities;
 
 namespace Permissions.Infrastructure.SQLServer
 {
