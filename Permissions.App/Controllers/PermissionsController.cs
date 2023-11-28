@@ -1,6 +1,5 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Nest;
 using Permissions.App.Features.Permission.Commands;
 using Permissions.App.Features.Permission.Queries;
 using System.Text.Json;
@@ -14,7 +13,7 @@ namespace Permissions.Controllers
         private readonly ILogger<PermissionsController> _logger;
         private readonly IMediator _mediator;
 
-        public PermissionsController(ILogger<PermissionsController> logger, IElasticClient elasticClient, IMediator mediator)
+        public PermissionsController(ILogger<PermissionsController> logger, IMediator mediator)
         {
             _logger = logger;
             _mediator = mediator;

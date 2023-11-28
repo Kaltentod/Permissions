@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Confluent.Kafka;
 using MediatR;
 using Permissions.App.Features.Permission.Commands;
 using Permissions.App.Presenters;

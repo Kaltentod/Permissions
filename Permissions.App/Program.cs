@@ -24,9 +24,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 );
 
 // ElasticSearch
-var elasticsearchSettings = builder.Configuration.GetSection("Elasticsearch");
-var elasticsearchUri = new Uri(elasticsearchSettings["Uri"]);
-var defaultIndex = elasticsearchSettings["DefaultIndex"];
+var elasticsearchUri = new Uri(builder.Configuration["Elasticsearch:Uri"]);
+var defaultIndex = builder.Configuration["Elasticsearch:DefaultIndex"];
 
 var settings = new ConnectionSettings(elasticsearchUri)
      .DefaultIndex(defaultIndex);

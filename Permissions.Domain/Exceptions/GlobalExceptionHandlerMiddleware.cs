@@ -25,7 +25,7 @@ public class GlobalExceptionHandlerMiddleware
         {
             context.Response.ContentType = "application/json";
             string message;
-            string? traceError = null;
+            string traceError;
 
             switch (ex)
             {

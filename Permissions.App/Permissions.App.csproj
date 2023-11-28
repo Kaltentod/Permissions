@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Infrastructure.SQLServer\Permissions.Infrastructure.SQLServer.csproj" />
+    <ProjectReference Include="..\Permissions.Infrastructure.SQLServer\Permissions.Infrastructure.SQLServer.csproj" />
   </ItemGroup>
 
 </Project>
