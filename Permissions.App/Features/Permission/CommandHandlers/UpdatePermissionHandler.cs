@@ -5,7 +5,8 @@ using Permissions.App.Features.Permission.Commands;
 using Permissions.App.Presenters;
 using PermissionEntity = Permissions.Domain.Entities.Permission;
 using Permissions.Domain.Exceptions;
-using Permissions.Domain.Entities;
+using Permissions.Domain.Services;
+using System.Text.Json;
 
 namespace Permissions.App.Features.Permission.CommandHandlers
 {
@@ -13,26 +14,54 @@ namespace Permissions.App.Features.Permission.CommandHandlers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ILogger<UpdatePermissionHandler> _logger;
+        private readonly IElasticSearchService _elasticSearchService;
+        private readonly IKafkaProducerService _kafkaProducerService;
 
-        public UpdatePermissionHandler(IUnitOfWork unitOfWork, IMapper mapper) { 
+        public UpdatePermissionHandler(IUnitOfWork unitOfWork, IMapper mapper, 
+            ILogger<UpdatePermissionHandler> logger,IElasticSearchService elasticSearchService, IKafkaProducerService kafkaProducerService) { 
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _logger = logger;
+            _elasticSearchService = elasticSearchService;
+            _kafkaProducerService = kafkaProducerService;
         }
         public async Task<PermissionPresenter> Handle(UpdatePermissionCommand request, CancellationToken cancellationToken)
         {
-            var permission = _mapper.Map<PermissionEntity>(request);
+            try
+            {
+                var permission = _mapper.Map<PermissionEntity>(request);
 
-            _ = await _unitOfWork.PermissionRepository.GetById(request.Id) ??
-                throw new PermissionNotFoundException($"No se encontró el permiso con ID: {request.Id}");
+                // Se valida la existencia del permiso por ID
+                _ = await _unitOfWork.PermissionRepository.GetById(permission.Id) ??
+                    throw new PermissionNotFoundException("Error modifying permission", permission.Id);
 
-            _ = await _unitOfWork.PermissionTypeRepository.GetById(permission.PermissionType) ??
-                throw new PermissionTypeNotFoundException($"No se encontró el tipo de permiso con ID: {permission.PermissionType}");
+                // Se valida la existencia de tipo de permiso del request por ID
+                var permissionType = await _unitOfWork.PermissionTypeRepository.GetById(permission.PermissionType) ??
+                    throw new PermissionTypeNotFoundException("Error modifying permission", permission.PermissionType);
 
-            var updatedPermission = await _unitOfWork.PermissionRepository.Update(permission);
-            await _unitOfWork.SaveChangesAsync();
+                // Se modifica el permiso en la base de datos
+                var updatedPermission = await _unitOfWork.PermissionRepository.Update(permission);
+                await _unitOfWork.SaveChangesAsync();
 
-            updatedPermission = await _unitOfWork.PermissionRepository.GetById(updatedPermission.Id);
-            return _mapper.Map<PermissionPresenter>(updatedPermission);
+                // Se actualiza permiso en ElasticSearch
+                await _elasticSearchService.UpdatePermission(updatedPermission);
+
+                // Se Produce mensaje a topic "Permission"
+                await _kafkaProducerService.ProduceMessageAsync(topic: "Permission", operation: "modify");
+
+                // Se agrega el tipo de permiso para mostrarlo en el response
+                updatedPermission.PermissionTypeRel = permissionType;
+
+                _logger.LogInformation($"Permiso modificado: {JsonSerializer.Serialize(updatedPermission)}");
+                return _mapper.Map<PermissionPresenter>(updatedPermission);
+            }
+            catch (Exception ex) 
+            {
+                _logger.LogError($"Error al modificar el permiso: {JsonSerializer.Serialize(request)}");
+                _logger.LogError($"StackTrace: {ex}");
+                throw;
+            }
         }
     }
 }

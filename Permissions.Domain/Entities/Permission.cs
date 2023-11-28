@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using Nest;
 
 namespace Permissions.Domain.Entities
 {
@@ -23,6 +24,7 @@ namespace Permissions.Domain.Entities
         [Required]
         public DateTime PermissionDate { get; set; }
 
+        [Ignore]
         [ForeignKey("PermissionType")]
         public virtual PermissionType PermissionTypeRel { get; set; }
     }

@@ -2,6 +2,13 @@
 {
     public class PermissionTypeNotFoundException : Exception
     {
-        public PermissionTypeNotFoundException(string message) : base(message) { }
+        public string TraceError { get; }
+        public int PermissionTypeId { get; }
+
+        public PermissionTypeNotFoundException(string traceError, int permissionTypeId) : base($"PermissionType with ID: {permissionTypeId} not found")
+        {
+            TraceError = traceError;
+            PermissionTypeId = permissionTypeId;
+        }
     }
 }

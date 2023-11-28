@@ -1,6 +1,8 @@
+using Confluent.Kafka;
 using Microsoft.EntityFrameworkCore;
 using Nest;
 using Permissions.Domain.Entities;
+using Permissions.Domain.Services;
 using Permissions.Infrastructure.SQLServer;
 using Permissions.Infrastructure.SQLServer.Repositories;
 using Permissions.Infrastructure.SQLServer.UnitOfWork;
@@ -22,7 +24,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 );
 
 // ElasticSearch
-var elasticsearchSettings = builder.Configuration.GetSection("ElasticsearchSettings");
+var elasticsearchSettings = builder.Configuration.GetSection("Elasticsearch");
 var elasticsearchUri = new Uri(elasticsearchSettings["Uri"]);
 var defaultIndex = elasticsearchSettings["DefaultIndex"];
 
@@ -53,6 +55,16 @@ builder.Services.AddScoped<Permissions.Infrastructure.SQLServer.Repositories.IRe
 // UnitOfWork
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+// Services
+builder.Services.AddScoped<IElasticSearchService, ElasticSearchService>();
+
+// Kafka producer
+var kafkaBootstrapServers = builder.Configuration["Kafka:BootstrapServers"];
+var producerConfig = new ProducerConfig { BootstrapServers = kafkaBootstrapServers };
+
+builder.Services.AddSingleton(producerConfig);
+builder.Services.AddScoped<IKafkaProducerService, KafkaProducerService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -71,6 +83,9 @@ using (var scope = app.Services.CreateScope())
     context.Database.EnsureCreated();
     DbInitializer.Initialize(context);
 }
+
+// GlobalHandlerException
+app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
 app.UseHttpsRedirection();
 

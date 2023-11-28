@@ -35,7 +35,7 @@ namespace Permissions.Infrastructure.SQLServer
 
             var lambda = Expression.Lambda<Func<TEntity, bool>>(equals, parameter);
 
-            var query = context.Set<TEntity>().AsQueryable();
+            var query = context.Set<TEntity>().AsQueryable().AsNoTracking();
             query = IncludeAllNavigationProperties(query);
             return await query.FirstOrDefaultAsync(lambda);
         }
