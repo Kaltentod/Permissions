@@ -26,10 +26,25 @@ namespace Permissions.Domain.Services
 
             try
             {
-                var deliveryReport = await _producer.ProduceAsync(topic, new Message<Null, string> { Value = message });
+                var deliveryResultTask = _producer.ProduceAsync(topic, new Message<Null, string> { Value = message });
 
-                _logger.LogInformation($"Delivered '{deliveryReport.Value}' to '{deliveryReport.TopicPartitionOffset}'");
-                _producer.Flush();
+                // Esperar a que la operación se complete o se cancele después de un cierto tiempo
+                var timeoutTask = Task.Delay(TimeSpan.FromSeconds(2), new CancellationToken());
+
+                // Esperar a que ocurra la primera de las dos tareas (envío del mensaje o timeout)
+                var completedTask = await Task.WhenAny(deliveryResultTask, timeoutTask);
+
+                // Si la operación de envío del mensaje se completó, manejar el resultado
+                if (completedTask == deliveryResultTask)
+                {
+                    var deliveryResult = await deliveryResultTask;
+                    _logger.LogInformation($"Delivered '{deliveryResult.Value}' to '{deliveryResult.TopicPartitionOffset}'");
+                }
+                else
+                {
+                    // Se alcanzó el tiempo de espera máximo, cancelar la operación de producción
+                    _logger.LogError("Tiempo de espera excedido al enviar el mensaje a Kafka.");
+                }
             }
             catch (Exception)
             {
